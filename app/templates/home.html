@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-    {% for post in posts %}
+    <!-- This loops through the posts in the pagination hence we use posts.items and not just post-->
+    {% for post in posts.items %}
         <article class="media content-section">
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='img/' + post.author.image_file) }}" alt="">
           <div class="media-body">
@@ -12,5 +13,22 @@
             <p class="article-content">{{ post.content }}</p>
           </div>
         </article>
+    {% endfor %}
+    <!-- This loops through the pages present-->
+    <!-- Left/Right_Edge show the number of pages that show to the right and to the left-->
+    <!-- Left/Right_Current show the number of pages to the right/left of your current page-->
+    <!-- right_current is set to 2 because it includes the current page-->
+    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            <!-- Condition make us know which page user is currently on.-->
+            {% if posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            <!-- If the page_num is null, this else statement is executed-->
+            ...
+        {% endif %}
     {% endfor %}
 {% endblock content %}

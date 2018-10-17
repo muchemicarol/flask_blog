@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1 class="mb-3">Posts by {{ user.username }} ({{ posts.total }})</h1>
+    <!-- This loops through the posts in the pagination hence we use posts.items and not just post-->
+    {% for post in posts.items %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ url_for('static', filename='img/' + post.author.image_file) }}" alt="">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="{{ url_for('user_posts', username=post.author.username)  }}">{{ post.author.username }}</a>
+              <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+            </div>
+            <h2><a class="article-title" href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.content }}</p>
+          </div>
+        </article>
+    {% endfor %}
+    <!-- This loops through the pages present-->
+    <!-- Left/Right_Edge show the number of pages that show to the right and to the left-->
+    <!-- Left/Right_Current show the number of pages to the right/left of your current page-->
+    <!-- right_current is set to 2 because it includes the current page-->
+    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            <!-- Condition make us know which page user is currently on.-->
+            {% if posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('user_posts', username=user.username, page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('user_posts', username=user.username, page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            <!-- If the page_num is null, this else statement is executed-->
+            ...
+        {% endif %}
+    {% endfor %}
+{% endblock content %}

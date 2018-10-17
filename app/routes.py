@@ -8,10 +8,17 @@ from app.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 
 
-
 @app.route('/')
 def home():
-    posts = Post.query.all()
+    # Allows to get other pages. Without it, only the first page will be displayed.
+    # To grab a page that we want, we need to pass a query parameter.
+    # Set the default page as page 1
+    # Type=int causes the site to throw a value error if someone passes anything other than an integer as a page number
+    page = request.args.get('page', 1, type=int)
+    # posts = Post.query.all(). This displays all every post on the current page.
+    # Paginations reduces overcrowding pof posts. The argument passed means that every page has 5 posts.
+    # The order_by method displays the posts in a decending order.
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
     # This is an argument that has been passed in the home function.
     return render_template('home.html', posts=posts)
 
@@ -148,6 +155,7 @@ def update_post(post_id):
     return render_template('create_post.html', title='Update Post',
                            form=form, legend='Update Post')
 
+
 @app.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
 def delete_post(post_id):
@@ -158,3 +166,15 @@ def delete_post(post_id):
     db.session.commit()
     flash('You have successfully deleted your post !', 'success')
     return redirect(url_for('home'))
+
+
+@app.route('/user/<string:username>')
+def user_posts(username):
+    page = request.args.get('page', 1, type=int)
+    # Gets the user.
+    # first_or_404 gets the first user with that username and if there is none, return a 404 error.
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user)\
+        .order_by(Post.date_posted.desc())\
+        .paginate(page=page, per_page=5)
+    return render_template('user_posts.html', posts=posts)
